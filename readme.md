@@ -20,7 +20,7 @@ This repository is a bioler plate for nodejs projects
 
     docker-compose up
 
-3. ## Stop the service
+3. ### Stop the service
 
     docker-compose down
 
