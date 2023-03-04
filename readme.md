@@ -9,6 +9,8 @@ This repository is a bioler plate for nodejs projects
 3. Passport included
 4. Handled Cors
 5. Redis installed
+6. User authentication handled
+7. User login, signup and admin role update handled
 
 ## Instructions to run the project
 
@@ -20,11 +22,14 @@ This repository is a bioler plate for nodejs projects
 
     docker-compose up
 
+    Few things to take care of -
+    1. Turn on MySQL server of the system. In mac check in system preferences, else it'll give a connection refused error.
+
 3. ### Stop the service
 
     docker-compose down
 
-## Changes required when using this for future applications
+## Changes required when using this for future applications (check for comments)
 
 1. docker-compose.yml
 2. config/config.js
