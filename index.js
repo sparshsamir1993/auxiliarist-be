@@ -37,8 +37,6 @@ app.use(passport.session());
 
 let router = require("./routes");
 app.use("/api", router);
-router.use('/api-docs', swaggerUi.serve);
-router.get('/api-docs', swaggerUi.setup(swaggerDocument));
 
 const PORT = process.env.PORT || 5050;
 console.log("on port :: " + PORT);
