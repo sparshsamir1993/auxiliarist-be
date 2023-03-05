@@ -7,6 +7,7 @@ module.exports = () => {
   return async (req, res, next) => {
     console.log("\n\n in verify token \n\n");
     console.log(req.originalUrl);
+    await redisClient.connect();
     const auth = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
       ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
       : undefined;
@@ -34,7 +35,7 @@ module.exports = () => {
           try {
             const decodedRT = jwt.verify(refreshToken, config.secret);
             const { id, email } = decodedRT;
-            const redisRT = await redisClient.getAsync(id);
+            const redisRT = await redisClient.get(id);
 
             if (redisRT === refreshToken) {
               const newToken = jwt.sign({ id, email }, config.secret, {
@@ -43,7 +44,7 @@ module.exports = () => {
               const refreshToken = jwt.sign({ id, email }, config.secret, {
                 expiresIn: CONSTANTS.auth.REFRESH_EXPIRY,
               });
-              await redisClient.setAsync(id, refreshToken);
+              await redisClient.set(id, refreshToken);
               res.set("token", `JWT ${newToken}`);
               res.set(CONSTANTS.auth.REFRESH_TOKEN_HEADER, `${refreshToken}`);
               req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER] = `JWT ${newToken}`;

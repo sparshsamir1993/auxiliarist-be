@@ -33,7 +33,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(passport.initialize());
-app.use(passport.session());
 
 let router = require("./routes");
 app.use("/api", router);

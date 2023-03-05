@@ -1,7 +1,8 @@
 var router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const User = require("../../../models/user");
+const { DataTypes } = require("sequelize");
+const User = require("../../../models/user")(sequelize, DataTypes);
 const jwtSecret = require("../../../config/jwtConfig");
 const { v4: uuid } = require("uuid");
 const redisClient = require("../../../services/redis-client");
@@ -20,12 +21,14 @@ router.post(
     async (req, res, next) => {
       console.log("in validation");
       const { email, password } = req.body;
+      console.log(email, password);
       await check(email).isEmpty().run(req);
       await check(password).isEmpty(req);
+      await redisClient.connect();
       const errors = validationResult(req);
       console.log(errors);
       if (!errors.isEmpty()) {
-        return res.status(404).send("error");
+        return res.status(404).send(CONSTANTS.error.FIELDS_EMPTY_ERROR);
       } else {
         next();
       }
@@ -33,7 +36,7 @@ router.post(
   ],
   (req, res, next) => {
     console.log("inside next");
-    passport.authenticate("login", async (err, users, info) => {
+    passport.authenticate("login", { session: false }, async (err, users, info) => {
       if (err) {
         console.error(`error ${err}`);
       }
@@ -45,6 +48,7 @@ router.post(
           res.status(403).send(info.message);
         }
       } else {
+        console.log(User);
         req.logIn(users, async () => {
           const user = await User.findOne({
             where: {
@@ -65,7 +69,7 @@ router.post(
               expiresIn: JWT_EXPIRY,
             }
           );
-          await redisClient.setAsync(user.id, refreshToken);
+          await redisClient.set(`${user.id}`, refreshToken);
           res.status(200).send({
             auth: true,
             token,
@@ -86,12 +90,11 @@ router.post(
     async (req, res, next) => {
       const { email, password } = req.body;
       await check(email).isEmpty().run(req);
-      await check(email).isEmail().run(req, { dryRun: true });
       await check(password).isEmpty().run(req);
       const errors = validationResult(req);
       console.log(errors);
       if (!errors.isEmpty()) {
-        return res.status(404).send("error");
+        return res.status(404).send(CONSTANTS.error.FIELDS_EMPTY_ERROR);
       } else {
         next();
       }
@@ -99,7 +102,7 @@ router.post(
   ],
   (req, res, next) => {
     console.log(req.body);
-    passport.authenticate("register", (err, user, info) => {
+    passport.authenticate("register", { session: false }, (err, user, info) => {
       // res.status(403).send(info.message);
       console.log(user);
       if (err) {
@@ -136,6 +139,7 @@ router.patch(
       await check(authToken[1]).isEmpty().run(req);
       const errors = validationResult(req);
       console.log(errors);
+      await redisClient.connect();
       if (!errors.isEmpty()) {
         return res.status(404).send("error");
       } else {

@@ -1,6 +1,6 @@
-# NodeJS Bioler plate
+# NodeJS Boiler plate
 
-This repository is a bioler plate for nodejs projects
+This repository is a boiler plate for nodejs projects
 
 ## Features
 
@@ -11,6 +11,8 @@ This repository is a bioler plate for nodejs projects
 5. Redis installed
 6. User authentication handled
 7. User login, signup and admin role update handled
+8. Migration file to add User
+9. JWT authentication
 
 ## Instructions to run the project
 

@@ -1,6 +1,7 @@
 const passport = require("passport");
 const keys = require("../keys/keys");
-const User = require("../models/user");
+const { DataTypes } = require("sequelize")
+const User = require("../models/user")(sequelize, DataTypes);
 const bcrypt = require("bcrypt");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;

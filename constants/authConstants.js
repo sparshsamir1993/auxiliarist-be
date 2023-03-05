@@ -1,4 +1,3 @@
-//
 module.exports = {
     JWT_EXPIRY: 30, // 15 minutes
     REFRESH_EXPIRY: 60 * 60 * 60 * 60, // 150 days
