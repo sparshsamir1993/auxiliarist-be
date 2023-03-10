@@ -7,7 +7,7 @@ const jwtSecret = require("../../../config/jwtConfig");
 const { v4: uuid } = require("uuid");
 const redisClient = require("../../../services/redis-client");
 const { validate } = require("../../../middlewares");
-
+const { redis } = require("../../../middlewares")
 const { body, validationResult, check, header } = require("express-validator");
 const CONSTANTS = require("../../../constants");
 
@@ -24,7 +24,7 @@ router.post(
       console.log(email, password);
       await check(email).isEmpty().run(req);
       await check(password).isEmpty(req);
-      await redisClient.connect();
+      await redis.redisPing();
       const errors = validationResult(req);
       console.log(errors);
       if (!errors.isEmpty()) {

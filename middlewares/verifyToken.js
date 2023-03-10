@@ -2,12 +2,13 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/jwtConfig");
 const redisClient = require("../services/redis-client");
 const CONSTANTS = require("../constants");
+const { redisPing } = require("./redis")
 
 module.exports = () => {
   return async (req, res, next) => {
     console.log("\n\n in verify token \n\n");
     console.log(req.originalUrl);
-    await redisClient.connect();
+    await redisPing();
     const auth = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
       ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
       : undefined;
