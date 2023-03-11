@@ -186,23 +186,11 @@ router.get("/get", verifyToken(), async (req, res, next) => {
     const userStored = await User.findOne({
       where: {
         id: user.id,
-      },
-      include: [
-        {
-          model: HospitalAdmin,
-          as: "hospitalAdmin",
-          include: [
-            {
-              model: Hospital,
-              as: "hospital",
-            },
-          ],
-        },
-      ],
+      }
     });
 
-    let { id, name, email, role, hospitalAdmin } = userStored;
-    res.status(200).send({ id, name, email, role, hospitalAdmin });
+    let { id, name, email, role } = userStored;
+    res.status(200).send({ id, name, email, role });
   } else {
     res.status(500).send("Error");
   }
