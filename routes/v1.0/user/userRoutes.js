@@ -189,8 +189,8 @@ router.get("/get", verifyToken(), async (req, res, next) => {
       }
     });
 
-    let { id, name, email, role } = userStored;
-    res.status(200).send({ id, name, email, role });
+    let { id, firstName, lastName, email, role } = userStored;
+    res.status(200).send({ id, firstName, lastName, email, role });
   } else {
     res.status(500).send("Error");
   }
