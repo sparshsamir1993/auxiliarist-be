@@ -139,7 +139,6 @@ router.patch(
       await check(authToken[1]).isEmpty().run(req);
       const errors = validationResult(req);
       console.log(errors);
-      await redisClient.connect();
       if (!errors.isEmpty()) {
         return res.status(404).send("error");
       } else {
@@ -148,10 +147,6 @@ router.patch(
       }
     },
   ],
-  async () => {
-    let user = await jwtAuth(req, res, next);
-    let { role } = user;
-  },
   verifyToken(),
   async (req, res, next) => {
     let user = await jwtAuth(req, res, next);
@@ -161,19 +156,18 @@ router.patch(
           id: user.id,
         },
       });
-      let name = req.body.name;
-      let dob = req.body.dob;
+      let firstName = req.body.firstName;
+      let lastName = req.body.lastName;
       let update = {};
-      if (name) {
-        update = { name };
+      if (firstName) {
+        update = { firstName };
       }
-      if (dob) {
-        update.dob = dob;
+      if (lastName) {
+        update.lastName = lastName;
       }
       const updatedUser = await userStored.update(update).catch(errHandler);
       let { id, email } = updatedUser;
-      // console.log(updatedUser);
-      res.status(200).send({ id, email, name: updatedUser.name });
+      res.status(200).send({ ...updatedUser });
     } else {
       res.status(404).send("Cant find user");
     }
