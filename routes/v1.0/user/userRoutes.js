@@ -32,10 +32,26 @@ router.get(
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { session: false }),
-  (req, res) => {
-    console.log(res);
-    console.log(FE_ADDRESS);
-    res.redirect(FE_ADDRESS);
+  async (req, res) => {
+    const user = req.user;
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtSecret.secret,
+      {
+        expiresIn: REFRESH_EXPIRY,
+      }
+    );
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtSecret.secret,
+      {
+        expiresIn: JWT_EXPIRY,
+      }
+    );
+    await redis.redisPing();
+    await redisClient.set(`${user.id}`, refreshToken);
+    const userData = { id: user.id, token, refreshToken };
+    res.redirect(`${FE_ADDRESS}?user=${encodeURIComponent(JSON.stringify(userData))}`);
   }
 );
 
@@ -244,19 +260,18 @@ router.patch(
 
 router.get("/get", verifyToken(), async (req, res, next) => {
   const user = await jwtAuth(req, res, next);
-  console.log("user is " + user)
   if (user) {
     const userStored = await User.findOne({
       where: {
         id: user.id,
       }
     });
-    console.log(userStored)
     let { id, firstName, lastName, email, role } = userStored;
     res.status(200).send({ id, firstName, lastName, email, role });
   } else {
-    res.status(401).send("Unauthorized");
+    res.status(401);
   }
 });
+
 
 module.exports = router;

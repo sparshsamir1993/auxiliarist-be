@@ -13,7 +13,7 @@ const JWTStrategy = require("passport-jwt").Strategy,
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 let opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("JWT");
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = "jwt-secret";
 
 const errHandler = (err) => {
@@ -126,7 +126,7 @@ passport.use(
         return done(null, existingUser);
       }
       // console.log(profile);
-      const user = await User.create({ googleID: profile._json.sub, firstName: profile._json.given_name, lastName: profile._json.family_name, email: profile._json.email, is_admin: false }).catch(errHandler);
+      const user = await User.create({ googleID: profile._json.sub, firstName: profile._json.given_name, lastName: profile._json.family_name, email: profile._json.email, role: USER_ROLE, }).catch(errHandler);
       console.log(profile._json);
       done(null, user);
     }

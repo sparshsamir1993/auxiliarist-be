@@ -9,6 +9,7 @@ module.exports = () => {
     console.log("\n\n in verify token \n\n");
     console.log(req.originalUrl);
     await redisPing();
+    console.log(req.headers);
     const auth = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
       ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
       : undefined;
@@ -22,7 +23,7 @@ module.exports = () => {
         jwt.verify(token, config.secret);
         const refreshToken = req.headers[CONSTANTS.auth.REFRESH_TOKEN_HEADER];
 
-        res.set("token", `JWT ${token}`);
+        res.set("token", `Bearer ${token}`);
         res.set(CONSTANTS.auth.REFRESH_TOKEN_HEADER, `${refreshToken}`);
         return next();
       } catch (err) {
@@ -46,7 +47,7 @@ module.exports = () => {
                 expiresIn: CONSTANTS.auth.REFRESH_EXPIRY,
               });
               await redisClient.set(`${id}`, refreshToken);
-              res.set("token", `JWT ${newToken}`);
+              res.set("token", `Bearer ${newToken}`);
               res.set(CONSTANTS.auth.REFRESH_TOKEN_HEADER, `${refreshToken}`);
               req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER] = `JWT ${newToken}`;
               req.headers[
