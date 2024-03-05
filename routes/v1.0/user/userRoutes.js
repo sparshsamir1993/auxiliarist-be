@@ -10,10 +10,34 @@ const { validate } = require("../../../middlewares");
 const { redis } = require("../../../middlewares")
 const { body, validationResult, check, header } = require("express-validator");
 const CONSTANTS = require("../../../constants");
-
+const { verifyToken, jwtAuth } = require("../../../middlewares");
+const bcrypt = require("bcrypt");
+const BCRYPT_SALT_ROUNDS = 12;
+const {
+  REFRESH_EXPIRY,
+  JWT_EXPIRY,
+  FE_ADDRESS,
+} = require("../../../constants/authConstants");
 const errHandler = (err) => {
   console.log("Error :: " + err);
 };
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { session: false }),
+  (req, res) => {
+    console.log(res);
+    console.log(FE_ADDRESS);
+    res.redirect(FE_ADDRESS);
+  }
+);
 
 router.post(
   "/login",
@@ -21,7 +45,6 @@ router.post(
     async (req, res, next) => {
       console.log("in validation");
       const { email, password } = req.body;
-      console.log(email, password);
       await check(email).isEmpty().run(req);
       await check(password).isEmpty(req);
       await redis.redisPing();
@@ -48,7 +71,6 @@ router.post(
           res.status(403).send(info.message);
         }
       } else {
-        console.log(User);
         req.logIn(users, async () => {
           const user = await User.findOne({
             where: {
@@ -103,7 +125,6 @@ router.post(
   (req, res, next) => {
     console.log(req.body);
     passport.authenticate("register", { session: false }, (err, user, info) => {
-      // res.status(403).send(info.message);
       console.log(user);
       if (err) {
         console.log(err);
@@ -112,7 +133,6 @@ router.post(
         console.error(info.message);
         res.status(403).send(info.message);
       } else {
-        // console.log(user);
         req.logIn(user, (error) => {
           console.log(user);
           res.status(200).send({ message: "user created", id: user.id });
@@ -122,11 +142,6 @@ router.post(
   }
 );
 
-const { verifyToken, jwtAuth } = require("../../../middlewares");
-const {
-  REFRESH_EXPIRY,
-  JWT_EXPIRY,
-} = require("../../../constants/authConstants");
 router.patch(
   "/update",
   [
@@ -174,19 +189,73 @@ router.patch(
   }
 );
 
+router.patch(
+  "/update/password",
+  [
+    async (req, res, next) => {
+      console.log("in password update request");
+      const authToken = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
+        ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
+        : undefined;
+      console.log(authToken[1]);
+      await check(authToken[1]).isEmpty().run(req);
+      const errors = validationResult(req);
+      console.log(errors);
+      if (!errors.isEmpty()) {
+        return res.status(404).send("error");
+      } else {
+        next();
+        console.log("everything is ok");
+      }
+    },
+  ],
+  verifyToken(),
+  async (req, res, next) => {
+    let user = await jwtAuth(req, res, next);
+    if (user) {
+      const userStored = await User.findOne({
+        where: {
+          id: user.id,
+        },
+      });
+      let currentPassword = req.body.currentPassword;
+      let newPassword = req.body.newPassword;
+      let update = {};
+      if (newPassword && currentPassword) {
+        const compareResponse = await bcrypt.compare(currentPassword, userStored.password);
+        if (compareResponse !== true) {
+          return res.status(401).send({ "error": "Passwords do not match" });
+        } else {
+          const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+          update = { "password": hashedPassword };
+          const updatedUser = await userStored.update(update).catch(errHandler);
+          let { id, email } = updatedUser;
+          res.status(200).send({ ...updatedUser });
+        }
+      }
+      else {
+        res.status(500).send({ "error": "Fields are empty" });
+      }
+    } else {
+      res.status(404).send("Cant find user");
+    }
+  }
+);
+
 router.get("/get", verifyToken(), async (req, res, next) => {
   const user = await jwtAuth(req, res, next);
+  console.log("user is " + user)
   if (user) {
     const userStored = await User.findOne({
       where: {
         id: user.id,
       }
     });
-
+    console.log(userStored)
     let { id, firstName, lastName, email, role } = userStored;
     res.status(200).send({ id, firstName, lastName, email, role });
   } else {
-    res.status(500).send("Error");
+    res.status(401).send("Unauthorized");
   }
 });
 

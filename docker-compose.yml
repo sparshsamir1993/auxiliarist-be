@@ -24,9 +24,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: testNameDB #change this
+      MYSQL_USER: user
       MYSQL_PASSWORD: example
     ports:
-      - "3306"
+      - "33061:3306"
     volumes:
       - ./docker/data/db:/var/lib/mysql
 

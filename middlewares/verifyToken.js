@@ -37,7 +37,7 @@ module.exports = () => {
             const decodedRT = jwt.verify(refreshToken, config.secret);
             const { id, email } = decodedRT;
             const redisRT = await redisClient.get(`${id}`);
-
+            console.log(refreshToken)
             if (redisRT === refreshToken) {
               const newToken = jwt.sign({ id, email }, config.secret, {
                 expiresIn: CONSTANTS.auth.JWT_EXPIRY,
@@ -57,7 +57,7 @@ module.exports = () => {
               return next();
             } else {
               console.log("token not same");
-              res.status(500).send("Refresh token not same.");
+              res.status(401).send("Refresh token not same.");
             }
           } catch (err) {
             console.log(err);
@@ -69,7 +69,7 @@ module.exports = () => {
         }
       }
     } else {
-      res.status(500).send("No tokens sent");
+      res.status(401).send("No tokens sent");
     }
   };
 };

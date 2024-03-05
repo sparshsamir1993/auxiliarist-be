@@ -5,4 +5,5 @@ module.exports = {
     REFRESH_TOKEN_HEADER: "refresh-token",
     ADMIN_ROLE: "ADMIN",
     USER_ROLE: "USER",
+    FE_ADDRESS: !process.env.NODE_ENV || process.env.NODE_ENV === "development" ? 'http://localhost:3000' : ''
 };
