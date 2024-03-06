@@ -30,8 +30,41 @@ router.get(
 );
 
 router.get(
+  "/auth/facebook",
+  passport.authenticate("facebook", {
+    scope: ["public_profile", "email"]
+  })
+);
+
+router.get(
   "/auth/google/callback",
   passport.authenticate("google", { session: false }),
+  async (req, res) => {
+    const user = req.user;
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtSecret.secret,
+      {
+        expiresIn: REFRESH_EXPIRY,
+      }
+    );
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtSecret.secret,
+      {
+        expiresIn: JWT_EXPIRY,
+      }
+    );
+    await redis.redisPing();
+    await redisClient.set(`${user.id}`, refreshToken);
+    const userData = { id: user.id, token, refreshToken };
+    res.redirect(`${FE_ADDRESS}?user=${encodeURIComponent(JSON.stringify(userData))}`);
+  }
+);
+
+router.get(
+  '/oauth2/redirect/facebook',
+  passport.authenticate("facebook", { session: false, failureRedirect: `${FE_ADDRESS}`, failureMessage: true }),
   async (req, res) => {
     const user = req.user;
     const refreshToken = jwt.sign(

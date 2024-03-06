@@ -12,6 +12,7 @@ const JWTStrategy = require("passport-jwt").Strategy,
   ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = "jwt-secret";
@@ -119,6 +120,10 @@ passport.use(
       if (!existingUser) {
         const userEmail = profile?._json?.email ? profile?._json?.email : null;
         existingUser = await User.findOne({ where: { email: userEmail } });
+        if (!existingUser.googleID) {
+          existingUser.googleID = profile.id;
+          await existingUser.save();
+        }
       }
       console.log("existingUser");
       console.log(existingUser);
@@ -132,6 +137,41 @@ passport.use(
     }
   )
 );
+
+// Step 3: Get App ID and App Secret from Facebook Developers Platform
+// Step 4: Configure Facebook Strategy
+passport.use(new FacebookStrategy({
+  clientID: keys.facebookAppId,
+  clientSecret: keys.facebookAppSecret,
+  callbackURL: "/api/v1/user/oauth2/redirect/facebook",
+  profileFields: ['id', 'displayName', 'photos', 'email']
+},
+  // Step 5: Implement the verify callback
+  async (accessToken, refreshToken, profile, done) => {
+    let existingUser = await User.findOne({ where: { facebookID: profile.id } });
+    if (!existingUser) {
+      const userEmail = profile?._json?.email ? profile?._json?.email : null;
+      existingUser = await User.findOne({ where: { email: userEmail } });
+      console.log("------facbookID is-------" + existingUser.facebookID);
+      console.log(JSON.stringify(existingUser))
+      if (!existingUser.facebookID) {
+        console.log("------facbookID is-------" + existingUser.facebookID, profile.id);
+        existingUser = await existingUser.update({ facebookID: profile.id }).catch(errHandler);
+      }
+    }
+    if (existingUser) {
+      return done(null, existingUser);
+    }
+
+    const user = await User.create({
+      facebookID: profile.id,
+      firstName: profile.displayName,
+      // Add any other fields as per your User model
+    }).catch(errHandler);
+
+    done(null, user);
+  }
+));
 
 passport.use(
   "jwt",
