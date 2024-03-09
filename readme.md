@@ -13,6 +13,8 @@ This repository is a boiler plate for nodejs projects
 7. User login, signup and admin role update handled
 8. Migration file to add User
 9. JWT authentication
+10. Google login
+11. Facebook login
 
 ## Instructions to run the project
 

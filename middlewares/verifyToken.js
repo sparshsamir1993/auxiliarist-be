@@ -49,7 +49,7 @@ module.exports = () => {
               await redisClient.set(`${id}`, refreshToken);
               res.set("token", `Bearer ${newToken}`);
               res.set(CONSTANTS.auth.REFRESH_TOKEN_HEADER, `${refreshToken}`);
-              req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER] = `JWT ${newToken}`;
+              req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER] = `Bearer ${newToken}`;
               req.headers[
                 CONSTANTS.auth.REFRESH_TOKEN_HEADER
               ] = `${refreshToken}`;
