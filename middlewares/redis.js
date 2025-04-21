@@ -4,7 +4,6 @@ module.exports = {
         let ping;
         try {
             ping = await redisClient.ping();
-            console.log(ping);
         } catch (err) {
             console.log(err)
         } finally {

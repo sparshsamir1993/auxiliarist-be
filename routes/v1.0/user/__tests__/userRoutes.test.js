@@ -6,7 +6,6 @@ describe("Test user routes", () => {
   beforeEach(() => {
     var redis = require("redis-mock"),
       client = redis.createClient();
-    console.log("completed.....");
     require("../../../../__mocks__/sequelize");
   });
   test("Should test signup", async (done) => {

@@ -53,7 +53,6 @@ passport.use(
           },
         });
         if (user != null) {
-          console.log("username or email already taken");
           return done(null, false, {
             message: "username or email already taken",
           });
@@ -64,7 +63,6 @@ passport.use(
             password: hashedPassword,
             role: USER_ROLE,
           }).then((user) => {
-            console.log("user created");
             return done(null, user);
           });
         });
@@ -95,10 +93,8 @@ passport.use(
         }
         const response = await bcrypt.compare(password, user.password);
         if (response !== true) {
-          console.log("passwords do not match");
           return done(null, false, { message: "passwords do not match" });
         }
-        console.log("user found & authenticated");
         return done(null, user);
       } catch (err) {
         console.log(err);
@@ -116,7 +112,6 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       let existingUser = await User.findOne({ where: { googleID: profile.id } });
-      console.log(profile);
       if (!existingUser) {
         const userEmail = profile?._json?.email ? profile?._json?.email : null;
         existingUser = await User.findOne({ where: { email: userEmail } });
@@ -125,14 +120,10 @@ passport.use(
           await existingUser.save();
         }
       }
-      console.log("existingUser");
-      console.log(existingUser);
       if (existingUser) {
         return done(null, existingUser);
       }
-      // console.log(profile);
       const user = await User.create({ googleID: profile._json.sub, firstName: profile._json.given_name, lastName: profile._json.family_name, email: profile._json.email, role: USER_ROLE, }).catch(errHandler);
-      console.log(profile._json);
       done(null, user);
     }
   )
@@ -152,10 +143,8 @@ passport.use(new FacebookStrategy({
     if (!existingUser) {
       const userEmail = profile?._json?.email ? profile?._json?.email : null;
       existingUser = await User.findOne({ where: { email: userEmail } });
-      console.log("------facbookID is-------" + existingUser.facebookID);
       console.log(JSON.stringify(existingUser))
       if (!existingUser.facebookID) {
-        console.log("------facbookID is-------" + existingUser.facebookID, profile.id);
         existingUser = await existingUser.update({ facebookID: profile.id }).catch(errHandler);
       }
     }

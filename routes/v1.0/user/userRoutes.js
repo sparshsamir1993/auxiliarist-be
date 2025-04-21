@@ -92,7 +92,6 @@ router.post(
   "/login",
   [
     async (req, res, next) => {
-      console.log("in validation");
       const { email, password } = req.body;
       await check(email).isEmpty().run(req);
       await check(password).isEmpty(req);
@@ -107,7 +106,6 @@ router.post(
     },
   ],
   (req, res, next) => {
-    console.log("inside next");
     passport.authenticate("login", { session: false }, async (err, users, info) => {
       if (err) {
         console.error(`error ${err}`);
@@ -172,9 +170,7 @@ router.post(
     },
   ],
   (req, res, next) => {
-    console.log(req.body);
     passport.authenticate("register", { session: false }, (err, user, info) => {
-      console.log(user);
       if (err) {
         console.log(err);
       }
@@ -183,7 +179,6 @@ router.post(
         res.status(403).send(info.message);
       } else {
         req.logIn(user, (error) => {
-          console.log(user);
           res.status(200).send({ message: "user created", id: user.id });
         });
       }
@@ -195,11 +190,9 @@ router.patch(
   "/update",
   [
     async (req, res, next) => {
-      console.log("in update request");
       const authToken = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
         ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
         : undefined;
-      console.log(authToken[1]);
       await check(authToken[1]).isEmpty().run(req);
       const errors = validationResult(req);
       console.log(errors);
@@ -207,7 +200,6 @@ router.patch(
         return res.status(404).send("error");
       } else {
         next();
-        console.log("everything is ok");
       }
     },
   ],
@@ -242,19 +234,15 @@ router.patch(
   "/update/password",
   [
     async (req, res, next) => {
-      console.log("in password update request");
       const authToken = req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER]
         ? req.headers[CONSTANTS.auth.AUTH_TOKEN_HEADER].split(" ")
         : undefined;
-      console.log(authToken[1]);
       await check(authToken[1]).isEmpty().run(req);
       const errors = validationResult(req);
-      console.log(errors);
       if (!errors.isEmpty()) {
         return res.status(404).send("error");
       } else {
         next();
-        console.log("everything is ok");
       }
     },
   ],

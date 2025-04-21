@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api:
-    image: test-name #change this
+    image: auxiliarist-be #change this
     build:
       context: .
       target: dev
@@ -18,12 +18,12 @@ services:
       - redis
 
   db:
-    image: mysql:latest
+    image: mysql:8.0.36
     restart: always
     container_name: db
     environment:
       MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: testNameDB #change this
+      MYSQL_DATABASE: auxiliaristDB #change this
       MYSQL_USER: user
       MYSQL_PASSWORD: example
     ports:

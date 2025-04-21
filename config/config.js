@@ -3,14 +3,14 @@ module.exports = {
     development: {
         username: "root",
         password: "example",
-        database: "testNameDB", // change this
-        host: "db",
+        database: "auxiliaristDB", // change this
+        host: "db", // change this
         dialect: "mysql",
     },
     test: {
         username: "root",
         password: "password",
-        database: "testNameDBTest", // change this
+        database: "auxiliaristDBTest", // change this
         host: "127.0.0.1",
         dialect: "mysql",
     },
