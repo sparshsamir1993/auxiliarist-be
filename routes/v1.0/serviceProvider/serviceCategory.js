@@ -34,4 +34,23 @@ router.get("/:userId", verifyToken(), async (req, res, next) => {
     }
 });
 
+router.delete("/:catergoryId", verifyToken(), async (req, res, next) => {
+    const { catergoryId } = req.params;
+    try {
+        let category = await ServiceCategory.destroy({
+            where: {
+                id: catergoryId
+            }
+        });
+        if (category) {
+            res.status(200).send("Deleted");
+        } else {
+            res.status(404).send("Not found");
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error deleting category");
+    }
+});
+
 module.exports = router;
